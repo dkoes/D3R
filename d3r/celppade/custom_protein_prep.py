@@ -9,6 +9,7 @@ import glob
 import logging
 import time
 import re 
+import traceback
 import shutil 
 from d3r.utilities.challenge_data import ChallengeData
 from d3r.utilities.readers import ReadText
@@ -153,7 +154,7 @@ class ProteinPrep(object):
                                                                        prepared_protein_file,
                                                                        targ_info_dict=targ_info_dict)
                 except:
-                    logging.info(sys.exc_info())
+                    logging.info(traceback.format_exc())
                     logging.info('try/except statement caught error in scientific protein prep. Skipping candidate %s' %(candidate_prefix))
                     continue
 

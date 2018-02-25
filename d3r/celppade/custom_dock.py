@@ -8,6 +8,7 @@ import shutil
 import re
 import glob
 import logging
+import traceback
 from d3r.utilities.readers import ReadText
 
 logger = logging.getLogger(__name__)
@@ -253,7 +254,9 @@ class Dock(object):
             ReadText_obj = ReadText()
             targ_info_dict = ReadText_obj.parse_txt(copy_dest)
             targ_info_dict['pocket_center'] = pocket_center
-
+            #dkoes - why isn't the whole thing propagated??
+            targ_info_dict['lig_prep_dir'] = targ_dic[targ_name]['lig_prep_dir']
+            
             #### Run CELPPade technical prep
 
             ### Ligand technical prep
@@ -275,7 +278,7 @@ class Dock(object):
             try:
                 tech_prepped_lig_file_list = self.ligand_technical_prep(lig_base_filename, targ_info_dict=targ_info_dict)
             except:
-                logging.info(sys.exc_info())
+                logging.info(traceback.format_exc())
                 logging.info('try/except statement caught error in function lig_technical_prep. Skipping target %s.' %(targ_name))
 
                 continue
@@ -320,7 +323,7 @@ class Dock(object):
                 try:
                     tech_prepped_prot_file_list = self.receptor_technical_prep(prot_base_filename, pocket_center, targ_info_dict=targ_info_dict)
                 except:
-                    logging.info(sys.exc_info())
+                    logging.info(traceback.format_exc())
                     logging.info('try/except statement caught error in function receptor_technical_prep.  Skipping candidate %s for target %s.' %(cand_id, targ_name))
                     continue
 
@@ -378,7 +381,7 @@ class Dock(object):
                                              output_lig_mol,
                                              targ_info_dict=targ_info_dict)
                 except:
-                    logging.info(sys.exc_info())
+                    logging.info(traceback.format_exc())
                     logging.info('try/except statement caught error in dock() function. Docking was given '
                                  'inputs tech_prepped_lig_file_list=%r tech_prepped_prot_file_list=%r '
                                  'output_receptor_pdb=%r output_lig_mol=%r. Skipping docking to this '

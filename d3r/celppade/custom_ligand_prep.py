@@ -10,6 +10,7 @@ import logging
 import time
 import re 
 import shutil
+import traceback
 from d3r.utilities.challenge_data import ChallengeData
 from d3r.utilities.readers import ReadText
 
@@ -51,6 +52,7 @@ class LigandPrep(object):
 
         ## Get all potential target directories and candidates within
         valid_targets = {}
+        data_dir = {}
 
         # Ensure that the challengedata targets are valid and copy in files
         for pot_target_dir in pot_target_dirs:
@@ -66,10 +68,15 @@ class LigandPrep(object):
 
             # Copy in <targ id>.txt file
             targ_info_basename = pot_targ_id + '.txt'
+            
             origin_txt_file = os.path.join(target_dir_path, targ_info_basename)
             dest_txt_file = os.path.join(pot_targ_id, targ_info_basename)
             shutil.copyfile(origin_txt_file, dest_txt_file)
 
+            # Copy in center.txt file
+            center_file = os.path.join(target_dir_path,'center.txt')
+            center_file_dest = os.path.join(pot_targ_id, 'center.txt')
+            shutil.copyfile(center_file, center_file_dest)
 
             # Pull in the ligand inchi/smiles
             lig_smiles_files = glob.glob('%s/lig_*.smi' %(target_dir_path))
@@ -82,6 +89,7 @@ class LigandPrep(object):
             shutil.copyfile(lig_smiles_file, dest_smiles_file)
 
             valid_targets[pot_targ_id] = local_smiles_file
+            data_dir[pot_targ_id] = target_dir_path
 
         for target_id in valid_targets.keys():
             os.chdir(current_dir_layer_1)
@@ -91,6 +99,8 @@ class LigandPrep(object):
             # Parse the <targ id>.txt file
             ReadText_obj = ReadText()
             targ_info_dict = ReadText_obj.parse_txt(target_id + '.txt')
+            
+            targ_info_dict['challenge_data'] = data_dir[target_id]
 
             # Prepare the ligand
             lig_prefix = smiles_filename.replace('.smi','')
@@ -100,7 +110,7 @@ class LigandPrep(object):
                                                               prepared_lig_file,
                                                               targ_info_dict=targ_info_dict)
             except:
-                logging.info(sys.exc_info())
+                logging.info(traceback.format_exc())
                 logging.info("try/except caught error in ligand_scientific_prep function.  Skipping target %s" %(target_id))
                 continue
             if lig_prep_result == False:
